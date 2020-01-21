@@ -1,10 +1,4 @@
----
-title: 'STA303 Assignment #1'
-author: "Zifan Pan"
-date: "1/20/2020"
-output: pdf_document
----
-
+x
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
