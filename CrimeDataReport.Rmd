@@ -1,0 +1,115 @@
+---
+title: 'STA303 Assignment #1'
+author: "Zifan Pan"
+date: "1/20/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+# pkg install
+library(tidyverse)
+```
+QUESTION I: ANOVA as a linear model
+
+
+Question 1a:
+
+The equation for the linear model is: 
+                          $Y_i = \beta_0 + \beta_{0}X_{1} + \beta_2X_2 + \epsilon$
+where $Y_i$ represents season_rating (response variable) and $X_i$ represents decade (predictors), $i=1,2$.
+
+The assumption for the ANOVA: 
+1) The observations are independent;
+2) The error terms are normal distributed and $E(\epsilon_i) = 0$;
+3) The error terms have constant variance, $Var(\epsilon_i) = \sigma^2$.
+
+
+Question 1b:
+
+The hypothesis of the ANOVA:
+                        $H_0: \mu_{1990s} = \mu_{2000s} = \mu_{2010s}$
+                        $H_a: \mu_i\neq\mu_j$ for some $i\neq j; i,j=1990s,2000s,2010s$
+Since we want to know whether the average season rating for crime shows is the same among the decades, then the null hypothesis is: the average season rating of decade 1990s, decade 2000s and decade 2010s are the same, and the alternative hypothesis is: at least two of the average season rating are different.
+
+
+Question 1c:
+
+```{r, echo = FALSE}
+# input data
+originaldata <- readRDS("crime_show_ratings.RDS")
+
+# create side-by-side box plots
+originaldata %>%
+  ggplot(aes(x = decade, y = season_rating)) +
+  geom_boxplot() + 
+  ggtitle("#7332 Decade Average Rating for Crime Shows Boxplot")
+
+# create Facetted histograms
+originaldata %>%
+  ggplot(aes(x = season_rating)) + 
+  geom_histogram(bins = 30) +
+  facet_wrap(~decade) +
+  ggtitle("#7332 Decade Average Rating for Crime Shows Histogram")
+```
+
+!!!ADD COMMMENT
+
+
+Question 1d:
+```{r,echo=FALSE}
+# Conduct a one-way ANOVA
+anova_1 <- originaldata %>% 
+  aov(season_rating ~ as.factor(decade), data=.)
+
+summary(anova_1)
+```
+
+Based on the p-value (0.238) obtained, which is greater than the significant level 0.05, we failed to reject the null hypothesis. Thus, it is evidenced that the average rating of the crime shows among the dacades are the same.
+
+
+Question 1e:
+
+```{r,echo=FALSE}
+plot(anova_1, 1)
+```
+This residual plot shows that the constant variance assumption is satisfied since the data does not follow a pattern and centered on 0. And $\epsilon$ ~ $N(0, \sigma^2)$.
+
+```{r, echo=FALSE}
+plot(anova_1, 2)
+```
+This standardized residual plot shows that the data approximately follows Normal, and it has two heavy tails.
+
+```{r, echo= FALSE}
+# tidyverse way to find the variance of each decade.
+originaldata %>%
+  group_by(decade) %>%
+  summarise(variance_rating = sd(season_rating)^2)
+```
+Based on the rule of thumb, if the $Var_{max}/Var_{min}<3$, then the equality of variances assumption is satisfied. 
+Here, $0.4804055/0.2033781 = 2.36213 <3$, so the assumption is satisfied.
+
+
+Question 1f:
+
+```{r,echo=FALSE}
+# Conduct a linear model of the data.
+lm_1<- lm(season_rating ~ as.factor(decade), data = originaldata)
+
+# Summary of the linear model.
+summary(lm_1)
+```
+
+The intercept, which is the mean of the reference group, represents the average season rating of deacde 1990s. And the coefficient of decade 2000s is 0.1368, which equals to $\mu_{2000s}-\mu_{1990s}$. Similarly, the coefficient of decade 2010s is 0.1938, which equals to $\mu_{2010s}-\mu_{1990s}$. 
+
+From the coefficients above, we can calculate the means for each observed group:
+$\hat{\mu_{1990s}} = 7.9222$;
+$\hat{\mu_{2000s}} = \hat{\mu_{1990s}} + 0.1368 = 7.9222+ 0.1368= 8.059$;
+$\hat{\mu_{2010s}} = \hat{\mu_{1990s}} + 0.1938 = 7.9222+ 0.1938 = 8.116$.
+
+
+
+
